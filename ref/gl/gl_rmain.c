@@ -14,6 +14,7 @@ GNU General Public License for more details.
 */
 
 #include "gl_local.h"
+#include "gl_sensor.h"
 #include "xash3d_mathlib.h"
 #include "library.h"
 #include "beamdef.h"
@@ -1010,6 +1011,8 @@ void R_RenderScene( void )
 	gEngfuncs.CL_ExtraUpdate ();	// don't let sound get messed up if going slow
 
 	R_DrawEntitiesOnList();
+
+	R_Sensor_CaptureFrame();
 
 	R_DrawWaterSurfaces();
 

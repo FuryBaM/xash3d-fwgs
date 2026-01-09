@@ -276,6 +276,8 @@ typedef float GLmatrix[16];
 #define GL_RG32I				0x823B
 #define GL_RG32UI				0x823C
 
+#define GL_RED 				0x1903
+
 // texture coord name
 #define GL_S				0x2000
 #define GL_T				0x2001
@@ -816,6 +818,15 @@ typedef float GLmatrix[16];
 #define GL_DEBUG_SEVERITY_HIGH_ARB		0x9146
 #define GL_DEBUG_SEVERITY_MEDIUM_ARB		0x9147
 #define GL_DEBUG_SEVERITY_LOW_ARB		0x9148
+
+#define GL_FRAMEBUFFER		0x8D40
+#define GL_RENDERBUFFER		0x8D41
+#define GL_COLOR_ATTACHMENT0	0x8CE0
+#define GL_DEPTH_ATTACHMENT	0x8D00
+#define GL_FRAMEBUFFER_COMPLETE	0x8CD5
+#define GL_FRAMEBUFFER_BINDING	0x8CA6
+#define GL_RENDERBUFFER_BINDING	0x8CA7
+#define GL_VIEWPORT		0x0BA2
 
 // GL Core additions
 #define GL_NUM_EXTENSIONS                 0x821D

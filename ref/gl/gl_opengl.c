@@ -1,5 +1,6 @@
 
 #include "gl_local.h"
+#include "gl_sensor.h"
 #if XASH_GL4ES
 #include "gl4es/include/gl4esinit.h"
 #include "gl4es/include/gl4eshint.h"
@@ -1286,7 +1287,8 @@ qboolean R_Init( void )
 	R_AliasInit();
 	R_ClearDecals();
 	R_ClearScene();
-
+	R_Sensor_Init();
+	R_Sensor_SetEnabled(1);
 	return true;
 }
 
