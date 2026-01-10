@@ -1,19 +1,3 @@
-// ============================
-// Sensor FBO: depth + mask
-// ============================
-//
-// Goal:
-// - offscreen render at 320x240 into FBO
-// - color = class-id mask (R8 or LUMINANCE8)
-// - depth = float depth buffer readback
-//
-// Assumptions:
-// - pgl* functions exist (loaded by engine)
-// - gEngfuncs.Host_Error / pfnMemAlloc / pfnMemFree exist
-// - You will call R_Sensor_Init() once after GL init
-// - You will call R_Sensor_CaptureFrame() once per frame when desired
-//
-
 #include "gl_sensor.h"
 #include "gl_local.h"
 #include "xash3d_mathlib.h"
@@ -23,43 +7,6 @@
 #include "entity_types.h"
 #include <stdlib.h>
 #include <string.h>
-
-// ---------- Missing GL enums (define if headers don't have them) ----------
-#ifndef GL_FRAMEBUFFER
-#define GL_FRAMEBUFFER              0x8D40
-#define GL_RENDERBUFFER             0x8D41
-#define GL_COLOR_ATTACHMENT0        0x8CE0
-#define GL_DEPTH_ATTACHMENT         0x8D00
-#define GL_FRAMEBUFFER_COMPLETE     0x8CD5
-#define GL_FRAMEBUFFER_BINDING      0x8CA6
-#endif
-
-#ifndef GL_DEPTH_COMPONENT24
-#define GL_DEPTH_COMPONENT24        0x81A6
-#endif
-
-#ifndef GL_RED
-#define GL_RED                      0x1903
-#endif
-#ifndef GL_R8
-#define GL_R8                       0x8229
-#endif
-
-#ifndef GL_LUMINANCE
-#define GL_LUMINANCE                0x1909
-#endif
-#ifndef GL_LUMINANCE8
-#define GL_LUMINANCE8               0x8040
-#endif
-
-#ifndef GL_DEPTH_COMPONENT
-#define GL_DEPTH_COMPONENT          0x1902
-#endif
-
-#ifndef GL_PACK_ALIGNMENT
-#define GL_PACK_ALIGNMENT           0x0D05
-#endif
-
 
 // ---------- Config ----------
 static int   g_sensor_w = 320;
@@ -182,7 +129,7 @@ static void R_Sensor_DestroyGL(void)
 
 		if (g_sensor_depth_rb)
 		{
-			pglDeleteRenderbuffers(1, &g_sensor_depth_rb);
+			qglDeleteRenderbuffers(1, &g_sensor_depth_rb);
 			g_sensor_depth_rb = 0;
 		}
 
@@ -279,7 +226,7 @@ static void R_Sensor_CreateGL(void)
 
 
 // ============================================================
-// Public API (you will call these)
+// Public API
 // ============================================================
 
 // Call once after GL init / extensions loaded
