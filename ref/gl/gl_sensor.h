@@ -11,7 +11,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
+	void R_DrawWorld_Sensor( void );
 	void R_Sensor_Init( void );
 	void R_Sensor_Shutdown( void );
 	SENSOR_EXPORT void R_Sensor_SetEnabled( int enabled );

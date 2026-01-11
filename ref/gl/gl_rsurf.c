@@ -3945,3 +3945,103 @@ void GL_InitRandomTable( void )
 
 	gEngfuncs.COM_SetRandomSeed( 0 );
 }
+
+
+static inline void R_Sensor_SetId(byte type, uint32_t id24)
+{
+	pglColor4ub(
+		type,
+		(byte)(id24 & 0xFF),
+		(byte)((id24 >> 8) & 0xFF),
+		(byte)((id24 >> 16) & 0xFF)
+	);
+}
+
+static void R_RenderBrushPoly_Sensor(msurface_t* fa, uint32_t id24)
+{
+	if (fa->flags & SURF_DRAWSKY)   return;
+	if (fa->flags & SURF_DRAWTURB)  return; // воду пока пропускаем
+#if 1
+	if (ENGINE_GET_PARM(PARM_QUAKE_COMPATIBLE) && FBitSet(fa->flags, SURF_TRANSPARENT))
+		return; // стекло/прозрачные в quake-режиме, по желанию
+#endif
+
+	R_Sensor_SetId(1 /*world*/, id24);
+
+	// Только геометрия
+	DrawGLPoly(fa->polys, 0.0f, 0.0f);
+}
+
+static void R_DrawTextureChains_Sensor_PerTexture(void)
+{
+	int i;
+	msurface_t* s;
+	texture_t* t;
+
+	R_LoadIdentity();
+
+	RI.currententity = CL_GetEntityByIndex(0);
+	RI.currentmodel = RI.currententity->model;
+
+	pglDisable(GL_TEXTURE_2D);
+	pglDisable(GL_FOG);
+	pglDisable(GL_BLEND);
+	pglDisable(GL_ALPHA_TEST);
+	pglDisable(GL_DITHER);
+	pglShadeModel(GL_FLAT);
+
+	pglEnable(GL_DEPTH_TEST);
+	pglDepthMask(GL_TRUE);
+
+	for (i = 0; i < WORLDMODEL->numtextures; i++)
+	{
+		t = WORLDMODEL->textures[i];
+		if (!t) continue;
+
+		s = t->texturechain;
+		if (!s || (i == tr.skytexturenum))
+			continue;
+
+		uint32_t materialId = (uint32_t)i;
+
+		for (; s != NULL; s = s->texturechain)
+			R_RenderBrushPoly_Sensor(s, materialId);
+
+		t->texturechain = NULL;
+	}
+}
+
+/*
+=================
+R_DrawWorld_Sensor
+
+Urzanny world pass для сенсора:
+- собирает видимые поверхности
+- рисует только геометрию мира (без decals/lightmaps/details/sky/fog)
+- предполагается, что внешний код уже настроил FBO/viewport/минимальный GL state
+=================
+*/
+void R_DrawWorld_Sensor(void)
+{
+	RI.currententity = CL_GetEntityByIndex(0);
+	if (!RI.currententity) return;
+
+	RI.currentmodel = RI.currententity->model;
+	if (!RI.drawWorld || RI.onlyClientDraw) return;
+
+	VectorCopy(RI.cullorigin, tr.modelorg);
+
+	// Важно: рекурсия набьёт skychain и texturechain
+	skychain = NULL;
+
+	if (RI.drawOrtho)
+		R_DrawWorldTopView(WORLDMODEL->nodes, RI.frustum.clipFlags);
+	else
+		R_RecursiveWorldNode(WORLDMODEL->nodes, RI.frustum.clipFlags);
+
+	// Выбирай одно:
+	// R_DrawTextureChains_Sensor_PerSurface();
+	R_DrawTextureChains_Sensor_PerTexture();
+
+	skychain = NULL;
+}

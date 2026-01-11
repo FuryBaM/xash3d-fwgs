@@ -1288,7 +1288,6 @@ qboolean R_Init( void )
 	R_ClearDecals();
 	R_ClearScene();
 	R_Sensor_Init();
-	R_Sensor_SetEnabled(1);
 	return true;
 }
 

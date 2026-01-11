@@ -360,7 +360,6 @@ static void R_Sensor_DrawEntities_NoViewmodel_NoEFX(void)
 	}
 }
 
-
 // Call once per frame AFTER main lists are ready.
 // Recommended place: end of R_RenderScene (before R_EndGL) or right after R_RenderScene in R_RenderFrame.
 void R_Sensor_CaptureFrame(void)
@@ -402,7 +401,7 @@ void R_Sensor_CaptureFrame(void)
 
 	// Draw world
 	R_Sensor_SetClassColor(1);
-	R_DrawWorld();
+	R_DrawWorld_Sensor();
 
 	// Draw entities (no viewmodel/EFX)
 	R_Sensor_DrawEntities_NoViewmodel_NoEFX();

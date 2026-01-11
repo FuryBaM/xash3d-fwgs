@@ -1169,8 +1169,6 @@ void R_SetUpWorldTransform( void );
 
 #define LM_SAMPLE_SIZE_AUTO( surf ) ( tr.sample_size == -1 ? gEngfuncs.Mod_SampleSizeForFace( surf ) : tr.sample_size )
 
-
-
 //
 // engine callbacks
 //
