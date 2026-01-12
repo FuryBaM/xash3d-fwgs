@@ -3972,19 +3972,21 @@ static void R_RenderBrushPoly_Sensor(msurface_t* fa, uint32_t id24)
 	DrawGLPoly(fa->polys, 0.0f, 0.0f);
 }
 
-static void R_DrawTextureChains_Sensor_PerTexture(void)
+static void R_DrawTextureChains_Sensor(void)
 {
-	int i;
+	int		i;
 	msurface_t* s;
 	texture_t* t;
 
-	R_LoadIdentity();
+	// make sure what color is reset
+	R_LoadIdentity();	// set identity matrix
 
+	// restore worldmodel
 	RI.currententity = CL_GetEntityByIndex(0);
 	RI.currentmodel = RI.currententity->model;
 
-	pglDisable(GL_TEXTURE_2D);
 	pglDisable(GL_FOG);
+	pglDisable(GL_TEXTURE_2D);
 	pglDisable(GL_BLEND);
 	pglDisable(GL_ALPHA_TEST);
 	pglDisable(GL_DITHER);
@@ -3993,20 +3995,20 @@ static void R_DrawTextureChains_Sensor_PerTexture(void)
 	pglEnable(GL_DEPTH_TEST);
 	pglDepthMask(GL_TRUE);
 
+	R_DrawVBO(!r_fullbright->value && !!WORLDMODEL->lightdata, true);
+
 	for (i = 0; i < WORLDMODEL->numtextures; i++)
 	{
 		t = WORLDMODEL->textures[i];
 		if (!t) continue;
 
 		s = t->texturechain;
+
 		if (!s || (i == tr.skytexturenum))
 			continue;
 
-		uint32_t materialId = (uint32_t)i;
-
 		for (; s != NULL; s = s->texturechain)
-			R_RenderBrushPoly_Sensor(s, materialId);
-
+			R_RenderBrushPoly_Sensor(s, CULL_VISIBLE);
 		t->texturechain = NULL;
 	}
 }
@@ -4024,24 +4026,34 @@ Urzanny world pass для сенсора:
 void R_DrawWorld_Sensor(void)
 {
 	RI.currententity = CL_GetEntityByIndex(0);
-	if (!RI.currententity) return;
+	if (!RI.currententity)
+		return;
 
 	RI.currentmodel = RI.currententity->model;
-	if (!RI.drawWorld || RI.onlyClientDraw) return;
+	if (!RI.drawWorld || RI.onlyClientDraw)
+		return;
 
 	VectorCopy(RI.cullorigin, tr.modelorg);
+	memset(gl_lms.lightmap_surfaces, 0, sizeof(gl_lms.lightmap_surfaces));
+	memset(fullbright_surfaces, 0, sizeof(fullbright_surfaces));
+	memset(detail_surfaces, 0, sizeof(detail_surfaces));
 
-	// Важно: рекурсия набьёт skychain и texturechain
-	skychain = NULL;
+	gl_lms.dynamic_surfaces = NULL;
+	pglDisable(GL_ALPHA_TEST);
+	pglDisable(GL_BLEND);
+	tr.blend = 1.0f;
+
+	R_ClearSkyBox();
 
 	if (RI.drawOrtho)
 		R_DrawWorldTopView(WORLDMODEL->nodes, RI.frustum.clipFlags);
 	else
 		R_RecursiveWorldNode(WORLDMODEL->nodes, RI.frustum.clipFlags);
 
-	// Выбирай одно:
-	// R_DrawTextureChains_Sensor_PerSurface();
-	R_DrawTextureChains_Sensor_PerTexture();
+	R_DrawTextureChains_Sensor();
 
+	tr.num_draw_decals = 0;
 	skychain = NULL;
+
+	gEngfuncs.R_DrawWorldHull();
 }
